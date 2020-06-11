@@ -1,0 +1,4 @@
+{% autoescape off %}
+Hi Admin, a new user tried to signup in NIDS with username: {{ user.username }}, {{ user.contact }}, email:{{ user.email }}
+Please click on the link to confirm {{ user.username }}'s registration,http://{{ domain }}{% url 'activate' uidb64=uid token=token %}
+{% endautoescape %}

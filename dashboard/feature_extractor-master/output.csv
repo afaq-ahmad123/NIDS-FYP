@@ -1,0 +1,1 @@
+flow_no,inter_pkt_arrival,duration,connection_status,land,no_of_wrong_frags,no_of_urgent,src_port,dst_port,src_ip,dst_ip,src_mac,dst_mac,src_bytes,dst_bytes,minfpktl,meanfpktl,maxfpktl,stdfpktl,minbpktl,meanbpktl,maxbpktl,stdbpktl,minfiat,meanfiat,maxfiat,stdfiat,minbiat,meanbiat,maxbiat,stdbiat,protocol,fpackets,bpackets

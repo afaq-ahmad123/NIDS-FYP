@@ -1,0 +1,7 @@
+Follow these steps:
+1. install packages by following this link: https://github.com/ammarhaiderak/pkt2flow
+2. install tshark package
+3. replace the password in variable 'p' at line 25 in file main.py with the password of your root user of linux OS
+4. after installing all the required packages run "main.py" file
+
+note: don't change the directories of the files they should be in working directory to run without problem & Linux OS is preferable to run this tool.

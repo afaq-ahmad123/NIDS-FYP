@@ -1,0 +1,3 @@
+> write script that collects packets in pcap using tcpdump.
+> write script that converts the individual flows to json.
+> extract the required features for datasets from individual flows.

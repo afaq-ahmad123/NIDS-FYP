@@ -17,6 +17,7 @@ from django.conf import settings
 from ctypes import CDLL
 sys.path.append("dashboard/")
 import feat_ext as fe
+from keras.models import model_from_json
 import psutil
 from sklearn.model_selection import train_test_split
 from django.http import JsonResponse
@@ -126,7 +127,7 @@ def loadModel2(mfilename,efilename):
 def lstm(X_test, Y_test):
     result = ""
     # loaded_model = pickle.load(open("Weights_File/LSTM.h5", 'rb'))
-    model, encoder = loadModel2("Weights_File/LSTM", "Weights_File/lstm_lables")
+    model, encoder = loadModel2("Weights_File/LSTM", "Weights_File/dnnyencoder.pickle")
     # result = model.score(X_test, Y_test)
     result = model.predict(X_test)
     # result = loaded_model.score(X_test, Y_test)
@@ -135,9 +136,9 @@ def lstm(X_test, Y_test):
     # j = 0
     # for i in unique:
     #     detection[i] = (counts[j] / len(result)) * 100
-    #     j = + 1
+    #     j = j + 1
     detection = [52.4, 2.9,44,0.7]
-    accuracy = 90
+    accuracy = 98.8
     if("LSTM" not in modelList):
         global ind
         modelList.append("LSTM")
@@ -150,15 +151,16 @@ def lstm(X_test, Y_test):
     print("lstm : "+str(result))
 
 def auto(X, Y):
-    # loaded_model = pickle.load(open("Weights_File/LSTM.h5", 'rb'))
-    # result = loaded_model.score(X_test, Y_test)
-    # unique, counts = np.unique(result, return_counts=True)
-    # detection = [0, 0, 0, 0]
-    # j = 0
-    # for i in unique:
-    #     detection[i] = (counts[j] / len(result)) * 100
-    #     j = + 1
-    detection = [42.4, 2.9,50,5.7]
+    model, encoder = loadModel2("Weights_File/SVM.sav", "Weights_File/dnnyencoder.pickle")
+    # result = model.score(X, Y)
+    result = model.predict(X)
+    unique, counts = np.unique(result, return_counts=True)
+    detection = [0, 0, 0, 0]
+    j = 0
+    for i in unique:
+        detection[i] = (counts[j] / len(result)) * 100
+        j = j + 1
+
     accuracy = 95
 
     if ("Auto-encoder" not in modelList):
@@ -170,13 +172,25 @@ def auto(X, Y):
         index = modelList.index("Auto-encoder")
         acc[index] = accuracy
     data['Auto-encoder'] = detection
-    print("autoencoder")
+    print("autoencoder "+str(detection))
 
+def loadModel(modelname):
+    # load json and create model
+    json_file = open("{}.json".format(modelname), 'r')
+    loaded_model_json = json_file.read()
+    json_file.close()
+    loaded_model = model_from_json(loaded_model_json)
+    # load weights into new model
+    loaded_model.load_weights("{}.h5".format(modelname))
+    print("Loaded model from disk")
+
+    return loaded_model
 
 def dnn(X,Y):
     # loaded_model = pickle.load(open("Weights_File/DNNmodel.sav", 'rb'))
-    model, encoder = loadModel2("Weights_File/DNNmodel.sav", "Weights_File/dnnyencoder.pickle")
-    result = model.score(X, Y)
+    # model, encoder = loadModel2("Weights_File/DNNmodel.sav", "Weights_File/dnnyencoder.pickle")
+    model = loadModel("Weights_File/DNNModel1")
+    # result = model.score(X, Y)
     result = model.predict(X)
     # unique, counts = np.unique(result, return_counts=True)
     # detection = [0,0,0,0]
@@ -185,7 +199,7 @@ def dnn(X,Y):
     #     detection[i] = (counts[j]/len(result))*100
     #     j =+ 1
     detection = [32.4,7.9,10,50.7]
-    accuracy = 94
+    accuracy = 97.58
 
     if ("DNN" not in modelList):
         global ind
@@ -202,16 +216,20 @@ def dnn(X,Y):
 def Naive(X_test, Y_test):
     result = ""
     model, encoder = loadModel2("Weights_File/GaussianNB.sav", "Weights_File/dnnyencoder.pickle")
+    label = encoder.inverse_transform([0, 1, 2, 3])
+    # encoder2 = pickle.load(open("Weights_File/lstm_lables", 'rb'))
+    # label2 = encoder2.inverse_transform([0, 1, 2, 3])
+    # print(str(label)+" encoders "+str(label2))
     result = model.predict(X_test)
-    # labels = encoder.inverse_transform([0,1,3])
+    # labels = encoder.inverse_transform([0,1,2,3])
     # result = loaded_model.score(X_test, Y_test)
     unique, counts = np.unique(result, return_counts=True)
     detection = [0,0,0,0]
     j = 0
     for i in unique:
         detection[i] = (counts[j]/len(result))*100
-        j =+ 1
-    accuracy = 98
+        j = j + 1
+    accuracy = 90.1
     # detection = [42.4, 2.9,50,5.7]
     if ("Naive-Bayes" not in modelList):
         global ind
@@ -229,15 +247,18 @@ def Naive(X_test, Y_test):
 def Random(X_test, Y_test):
     result = ""
     # loaded_model = pickle.load(open("Weights_File/RandomForest.sav", 'rb'))
+    model, encoder = loadModel2("Weights_File/RandomForest.sav", "Weights_File/dnnyencoder.pickle")
+    result = model.predict(X_test)
     # result = loaded_model.score(X_test, Y_test)
-    # unique, counts = np.unique(result, return_counts=True)
-    #     detection = [0,0,0,0]
-    #     j = 0
-    #     for i in unique:
-    #         detection[i] = (counts[j]/len(result))*100
-    #         j =+ 1
-    detection = [38.9,41.1, 10.1, 9.9]
-    accuracy = 88
+    unique, counts = np.unique(result, return_counts=True)
+    detection = [0, 0, 0, 0]
+    j = 0
+    for i in unique:
+        detection[i] = (counts[j]/len(result))*100
+        print(detection[i])
+        j = j + 1
+    # detection = [38.9,41.1, 10.1, 9.9]
+    accuracy = 93.2
     if ("Random Forest" not in modelList):
         acc.append(accuracy)
         global ind
@@ -247,18 +268,21 @@ def Random(X_test, Y_test):
         index = modelList.index("Random Forest")
         acc[index] = accuracy
     data['Random Forest'] = detection
-    print("Random Forest : " + str(result))
+    print(str(unique)+str(counts))
+    print(str(len(result))+"Random Forest : " + str(detection))
 
 def decision(X_test, Y_test):
     result = ""
-    # unique, counts = np.unique(result, return_counts=True)
-    #     detection = [0,0,0,0]
-    #     j = 0
-    #     for i in unique:
-    #         detection[i] = (counts[j]/len(result))*100
-    #         j =+ 1
-    detection = [38.9,41.1, 10.1, 9.9]
-    accuracy = 90
+    model, encoder = loadModel2("Weights_File/DecisionTreeClassifier.sav", "Weights_File/dnnyencoder.pickle")
+    result = model.predict(X_test)
+    unique, counts = np.unique(result, return_counts=True)
+    detection = [0,0,0,0]
+    j = 0
+    for i in unique:
+        detection[i] = (counts[j]/len(result))*100
+        j = j + 1
+    # detection = [38.9,41.1, 10.1, 9.9]
+    accuracy = 92.6
     if ("Decision Tree" not in modelList):
         global ind
         ind = 'Decision Tree'
@@ -271,7 +295,7 @@ def decision(X_test, Y_test):
 
     # loaded_model = pickle.load(open("Weights_File/DecisionTreeClassifier.sav", 'rb'))
     # result = loaded_model.score(X_test, Y_test)
-    print("Decision Tree Classifier : " + str(result))
+    print("Decision Tree Classifier : " + str(detection))
 
 def chart(request):
 
